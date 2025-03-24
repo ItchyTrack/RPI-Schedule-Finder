@@ -1,0 +1,3 @@
+[submodule "class_data"]
+	path = class_data
+	url = https://github.com/quacs/quacs-data
