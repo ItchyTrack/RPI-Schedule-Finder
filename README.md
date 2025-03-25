@@ -1,12 +1,18 @@
 This project is to help students find courses that fit together of a schedule.
 
+# Setup
 To pull the data run the commands:
-"git submodule init"
-"git submodule update"
+```
+git submodule init
+git submodule update
+```
 To update the data you can run:
-"git submodule foreach git pull origin master"
+```
+git submodule foreach git pull origin master
+```
 
 Input should go into a json named "classes.json":
+```
 {
 	"classes": [
 		"Rcos Open Source Development",
@@ -32,8 +38,11 @@ Input should go into a json named "classes.json":
 		}
 	}
 }
+```
 
+# Running
 Run the main.py and you should see a output that looks like:
+```
 found 48 combos
 Cred l:h     CRSE:     Title:                           CRIs:
 ---------------------------------------------------------------------------------------------------------------
@@ -55,3 +64,4 @@ Cred l:h     CRSE:     Title:                           CRIs:
 1:4          4700      Rcos Open Source Development     75416
 13:16
 ---------------------------------------------------------------------------------------------------------------
+```
