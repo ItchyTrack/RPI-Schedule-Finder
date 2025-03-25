@@ -1,0 +1,25 @@
+{
+	"classes": [
+		"Rcos Open Source Development",
+		"Introduction to Formal Logic",
+		"Introduction To Algorithms",
+		"Principles of Software",
+		"__DONT__Graph Theory",
+		"__DONT__Computability and Logic",
+		"Foundations Of Analysis",
+		"Intro Differential Equations",
+		"__DONT__Advanced Computer Systems",
+		"Robotics II",
+		"Computer Components and Operations",
+		"Embedded Control"
+	],
+	"filters" : {
+		"classes to force": [
+			"Introduction To Algorithms"
+		],
+		"cred": {
+			"min": 16,
+			"max": 20
+		}
+	}
+}

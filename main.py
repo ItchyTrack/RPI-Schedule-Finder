@@ -5,6 +5,7 @@ path = Path("class_data/semester_data") / "202509" / Path("courses.json")
 
 import pandas as pd
 import json
+from copy import copy
 
 f = open(path)
 data1 = json.load(f)
@@ -15,10 +16,12 @@ for sec in data1:
 
 
 f = open(Path("classes.json"))
-classesToTake:list = json.load(f)
+userData:list = json.load(f)
 f.close()
 
-for c in classesToTake:
+classesToTake = userData["classes"]
+cpy = copy(classesToTake)
+for c in cpy:
 	if "__DONT__" in classesToTake:
 		classesToTake.remove(c)
 data2 = data2[data2["title"].isin(classesToTake)]
@@ -63,17 +66,19 @@ for index, row in data3.iterrows():
 		if (row["crn"], row2["crn"]) not in pairsToSkip:
 			G.add_edge(row["crn"], row2["crn"])
 
-subs = [s for s in nx.enumerate_all_cliques(G) if len(s) >= 6]
+# subs = [s for s in nx.enumerate_all_cliques(G) if len(s) >= 6]
+subs = [s for s in nx.enumerate_all_cliques(G)]
 
-from copy import copy
-
-needed = ["Intro Differential Equations"]
-
-cpy = copy(subs)
+filterData = userData["filters"]
+needed = filterData["classes to force"]
+credData = {}
+cpy = subs.copy()
 for sub in cpy:
 	credMax = 0
 	credMin = 0
 	found = 0
+	key = list()
+	credDict = {}
 	for c in sub:
 		row = data3.loc[data3['crn'] == c].iloc[0]
 		if (row["title"] in needed):
@@ -81,10 +86,13 @@ for sub in cpy:
 		# print(row)
 		credMax += row["credMax"]
 		credMin += row["credMin"]
-	if not (found == len(needed) and credMax >= 23 and credMin <= 23):
+		credDict[row["crse"]] = (int(row["credMin"]), int(row["credMax"]))
+		key.append(row["crse"])
+	if not (found == len(needed) and credMax >= filterData["cred"]["min"] and credMin <= filterData["cred"]["max"]):
 		subs.remove(sub)
-
-print(len(subs))
+	else:
+		key.sort()
+		credData[str(key)] = credDict
 
 # print(subs)
 typeSets = {}
@@ -105,36 +113,67 @@ for sub in subs:
 		row = data3.loc[data3['crn'] == c].iloc[0]
 		typeSets[str(key)][row["title"]].add(c)
 
-print(typeSets.keys())
+print()
+print()
+print("found", len(subs), "combos")
+rowsToPrint = []
+maxStart = 0
+maxEnd = 0
+# print(credData)
+for ds in typeSets:
+	rowsToPrint.append([])
+	for d in ds[1:-1].split(", "):
+		row = data3.loc[data3['crse'] == int(d)].iloc[0]
+		start = d + "      " + row["title"]
+		endList = list(typeSets[ds][row["title"]])
+		end = ""
+		for i in endList[:-1]:
+			end += str(i) + ", "
+		end += str(endList[-1])
+		rowsToPrint[-1].append((credData[ds][int(d)], start, end))
+		if len(start) > maxStart:
+			maxStart = len(start)
+		if len(end) > maxEnd:
+			maxEnd = len(end)
 
-for d in typeSets:
-	print(typeSets[d])
+lenOfLine = maxStart + 5 + maxEnd+14
+print("Cred l:h     CRSE:     Title:" +  " "*(maxStart + 5-16) + "CRIs:")
+print("-"*(lenOfLine))
+for rows in rowsToPrint:
+	sumL = 0
+	sumH = 0
+	for cred ,start, end in rows:
+		sumL += cred[0]
+		sumH += cred[1]
+		print(str(cred[0]) + ":" + str(cred[1])+ " "*(13-len(str(int(cred[0])) + ":" + str(int(cred[1]))))+ start + " "*(maxStart + 5 -len(start)) + end)
+	print(str(sumL) + ":" + str(sumH))
+	print("-"*(lenOfLine))
 
 # print(subs)
-for sub in subs:
-	data = []
-	for c in sub:
-		row = data3.loc[data3['crn'] == c].iloc[0]
-		data.append((row["title"], int(c)))
-	data.sort()
-	for d in data:
-		print(d[0], str(d[1]) + ", ", end="")
-	print()
-	# nx.draw_networkx_edges(G, pos)
+# for sub in subs:
+# 	data = []
+# 	for c in sub:
+# 		row = data3.loc[data3['crn'] == c].iloc[0]
+# 		data.append((row["title"], int(c)))
+# 	data.sort()
+# 	for d in data:
+# 		print(d[0], str(d[1]) + ", ", end="")
+# 	print()
+# 	# nx.draw_networkx_edges(G, pos)
 
 # exit()
 
-for sub in subs:
-	pos = nx.spring_layout(G)
-	nx.draw_networkx_nodes(G, pos, cmap=plt.get_cmap('jet'),  node_size = 500, nodelist=sub)
-	nx.draw_networkx_labels(G, pos)
-	nx.draw_networkx_edges(G, pos)
-	print(sub)
-	credMax = 0
-	credMin = 0
-	foundDif = False
-	for c in sub:
-		row = data3.loc[data3['crn'] == c].iloc[0]
-		print(row["title"], row["credMax"])
-	# nx.draw_networkx_edges(G, pos)
-	plt.show()
+# for sub in subs:
+# 	pos = nx.spring_layout(G)
+# 	nx.draw_networkx_nodes(G, pos, cmap=plt.get_cmap('jet'),  node_size = 500, nodelist=sub)
+# 	nx.draw_networkx_labels(G, pos)
+# 	nx.draw_networkx_edges(G, pos)
+# 	print(sub)
+# 	credMax = 0
+# 	credMin = 0
+# 	foundDif = False
+# 	for c in sub:
+# 		row = data3.loc[data3['crn'] == c].iloc[0]
+# 		print(row["title"], row["credMax"])
+# 	# nx.draw_networkx_edges(G, pos)
+# 	plt.show()
