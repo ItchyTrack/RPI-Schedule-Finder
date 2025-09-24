@@ -1,19 +1,7 @@
 from pathlib import Path
-
-path = Path("class_data/semester_data") / "202509" / Path("courses.json")
-# print(path)
-
 import pandas as pd
 import json
 from copy import copy
-
-f = open(path)
-data1 = json.load(f)
-f.close()
-data2:pd.DataFrame = pd.DataFrame(columns=["title", "crse", "id", "subj", "sections"])
-for sec in data1:
-	data2 = pd.concat([data2, pd.DataFrame(sec["courses"])])
-
 
 f = open(Path("classes.json"))
 userData:list = json.load(f)
@@ -24,6 +12,17 @@ cpy = copy(classesToTake)
 for c in cpy:
 	if "__DONT__" in classesToTake:
 		classesToTake.remove(c)
+
+path = Path("class_data/semester_data") / str(userData["year"]) / Path("courses.json")
+# print(path)
+
+f = open(path)
+data1 = json.load(f)
+f.close()
+data2:pd.DataFrame = pd.DataFrame(columns=["title", "crse", "id", "subj", "sections"])
+for sec in data1:
+	data2 = pd.concat([data2, pd.DataFrame(sec["courses"])])
+
 data2 = data2[data2["title"].isin(classesToTake)]
 
 data3:pd.DataFrame = pd.DataFrame(columns=["title", "crse", "subj", 'act', 'credMax', 'credMin', 'cap', 'crn', 'rem', 'sec', 'timeslots'])
