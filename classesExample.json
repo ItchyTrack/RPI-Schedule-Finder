@@ -1,5 +1,5 @@
 {
-	"year": 202601,
+	"year": 202509,
 	"classes": [
 		"Rcos Open Source Development",
 		"Introduction to Formal Logic",
@@ -16,7 +16,8 @@
 	],
 	"filters" : {
 		"classes to force": [
-			"Introduction To Algorithms"
+			"Introduction To Algorithms",
+			"Rcos Open Source Development"
 		],
 		"cred": {
 			"min": 16,
