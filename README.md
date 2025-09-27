@@ -14,7 +14,7 @@ git submodule foreach git pull origin master
 Input should go into a json named "classes.json":
 ```
 {
-	"year": 202601,
+	"year": 202509,
 	"classes": [
 		"Rcos Open Source Development",
 		"Introduction to Formal Logic",
@@ -31,7 +31,8 @@ Input should go into a json named "classes.json":
 	],
 	"filters" : {
 		"classes to force": [
-			"Introduction To Algorithms" < if you put something here you also need it in the classes list
+			"Introduction To Algorithms",            < if you put something here you also need it in the classes list
+			"Rcos Open Source Development"
 		],
 		"cred": {
 			"min": 16,
@@ -44,25 +45,32 @@ Input should go into a json named "classes.json":
 # Running
 Run the main.py and you should see a output that looks like:
 ```
-found 48 combos
-Cred l:h     CRSE:     Title:                           CRIs:
----------------------------------------------------------------------------------------------------------------
-4:4          2300      Introduction To Algorithms       72238, 72272, 72602, 72027, 72028, 72284
-4:4          2400      Intro Differential Equations     72232, 72233, 72394, 72491, 72212, 72087, 72088, 72089
-4:4          4090      Foundations Of Analysis          72573
-1:4          4700      Rcos Open Source Development     75416
+found 98 combos
+Cred l:h     SUBJ:     CRSE:     Title:                           CRIs:
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+4:4          CSCI      2300      Introduction To Algorithms       72238, 72272, 72602, 72027, 72028, 72284
+1:4          CSCI      4700      Rcos Open Source Development     75416
+4:4          MATH      2400      Intro Differential Equations     72232, 72233, 72394, 72491, 72297, 72299, 72300, 72298, 72212, 72087, 72088, 72089
+4:4          MATH      4090      Foundations Of Analysis          72573
 13:16
----------------------------------------------------------------------------------------------------------------
-4:4          2300      Introduction To Algorithms       72602, 72028, 72238, 72284
-4:4          2350      Embedded Control                 72017, 74143
-4:4          4090      Foundations Of Analysis          72573
-1:4          4700      Rcos Open Source Development     75416
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+4:4          CSCI      2300      Introduction To Algorithms       72602, 72028, 72238, 72284
+1:4          CSCI      4700      Rcos Open Source Development     75416
+4:4          ENGR      2350      Embedded Control                 72016, 74143
+4:4          MATH      2400      Intro Differential Equations     72232, 72297, 72233, 72299, 72300, 72394, 72491
 13:16
----------------------------------------------------------------------------------------------------------------
-4:4          2300      Introduction To Algorithms       72284, 72238
-4:4          2350      Embedded Control                 72016
-4:4          2400      Intro Differential Equations     72232, 72233, 72394, 72491
-1:4          4700      Rcos Open Source Development     75416
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+4:4          CSCI      2300      Introduction To Algorithms       72602, 72028, 72238, 72284
+1:4          CSCI      4700      Rcos Open Source Development     75416
+4:4          ENGR      2350      Embedded Control                 72017, 74143
+4:4          MATH      4090      Foundations Of Analysis          72573
 13:16
----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+4:4          CSCI      2300      Introduction To Algorithms       72602, 72028, 72238, 72284
+1:4          CSCI      4700      Rcos Open Source Development     75416
+4:4          ENGR      2350      Embedded Control                 74143
+4:4          MATH      2400      Intro Differential Equations     72297, 72299, 72300
+4:4          MATH      4090      Foundations Of Analysis          72573
+17:20
+-----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
