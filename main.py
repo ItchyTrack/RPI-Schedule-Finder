@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 import pandas as pd
 import json
 from copy import copy
@@ -8,7 +9,7 @@ f = open(Path("classes.json"))
 userData:list = json.load(f)
 f.close()
 
-classesToTake:list = userData["classes"]
+classesToTake:list[str] = userData["classes"]
 cpy = copy(classesToTake)
 for c in cpy:
 	if "__DONT__" in c:
@@ -26,37 +27,93 @@ for sec in data1:
 	data2 = pd.concat([data2, pd.DataFrame(sec["courses"])])
 
 data2Incomplete = data2[data2["title"].isin(classesToTake)]
-
 classesNotFound = []
 for c in classesToTake:
 	if (c not in data2Incomplete["title"].values):
 		classesNotFound.append(c)
 
-if len(classesNotFound) != 0:
-	# try find them in catalog
-	catalogPath = Path("class_data/semester_data") / str(userData["year"]) / Path("catalog.json")
-	catalogF = open(catalogPath)
-	catalogData1 = json.load(catalogF)
-	catalogF.close()
-	catalogData2 = pd.DataFrame(pd.DataFrame(catalogData1).T, columns=["name", "subj", "crse"])
-	catalogData2 = catalogData2[catalogData2["name"].isin(classesNotFound)]
+foundInCatalog = set()
 
-	for row in catalogData2.values:
-		rows = data2[(data2["subj"] == row[1]) & (data2["crse"] == int(row[2]))]
-		if (len(rows.index.values) == 0):
-			# print(f"could not find class {row[0]}")
-			continue
-		rows.loc[:,'title'] = row[0]
-		for secs in rows["sections"]:
-			for sec in secs:
-				sec['title'] = row[0]
-		data2Incomplete = pd.concat([data2Incomplete, rows])
+if len(classesNotFound) != 0:
+	classesNotFoundCaseChange = []
+	for i in range(len(classesNotFound)):
+		c = classesNotFound[i].strip()
+		for j in range(len(c)-1):
+			if (c[j] == " "):
+				c = c[:j+1] + c[j+1].upper() + c[j+2:]
+		if (c != classesNotFound[i].strip()):
+			classesNotFoundCaseChange.append(c)
+	if (len(classesNotFoundCaseChange) > 0):
+		data2CaseChange = data2[data2["title"].isin(classesNotFoundCaseChange)]
+		for i in range(len(classesNotFoundCaseChange)):
+			d = data2CaseChange.loc[data2CaseChange["title"] == classesNotFoundCaseChange[i], 'title']
+			if (len(d) == 0): continue
+			data2CaseChange.loc[data2CaseChange["title"] == classesNotFoundCaseChange[i], 'title'] = classesNotFound[i]
+		data2Incomplete = pd.concat([data2Incomplete, data2CaseChange])
+
+	classesNotFound = []
+	for c in classesToTake:
+		if (c not in data2Incomplete["title"].values):
+			classesNotFound.append(c)
+
+	if len(classesNotFound) != 0:
+		# try find them in catalog
+		catalogPath = Path("class_data/semester_data") / str(userData["year"]) / Path("catalog.json")
+		catalogF = open(catalogPath)
+		catalogData1 = json.load(catalogF)
+		catalogF.close()
+		catalogData2S = pd.DataFrame(pd.DataFrame(catalogData1).T, columns=["name", "subj", "crse"])
+		catalogData2 = catalogData2S[catalogData2S["name"].isin(classesNotFound)]
+
+		for row in catalogData2.values:
+			foundInCatalog.add(row[0])
+			rows = data2[(data2["subj"] == row[1]) & (data2["crse"] == int(row[2]))]
+			if (len(rows.index.values) == 0):
+				continue
+			rows.loc[:,'title'] = row[0]
+			for secs in rows["sections"]:
+				for sec in secs:
+					sec['title'] = row[0]
+			data2Incomplete = pd.concat([data2Incomplete, rows])
+
+		classesNotFound = []
+		for c in classesToTake:
+			if (c not in data2Incomplete["title"].values):
+				classesNotFound.append(c)
+
+		if len(classesNotFound) != 0:
+			classesNotFoundCaseChange = []
+			for i in range(len(classesNotFound)):
+				c = classesNotFound[i].strip()
+				for j in range(len(c)-1):
+					if (c[j] == " "):
+						c = c[:j+1] + c[j+1].upper() + c[j+2:]
+				if (c != classesNotFound[i].strip()):
+					classesNotFoundCaseChange.append(c)
+			if (len(classesNotFoundCaseChange) > 0):
+				catalogData2CaseChange = catalogData2S[catalogData2S["name"].isin(classesNotFoundCaseChange)]
+				for i in range(len(classesNotFoundCaseChange)):
+					d = catalogData2CaseChange.loc[catalogData2CaseChange["name"] == classesNotFoundCaseChange[i], 'name']
+					if (len(d) == 0): continue
+					catalogData2CaseChange.loc[catalogData2CaseChange["name"] == classesNotFoundCaseChange[i], 'name'] = classesNotFound[i]
+				for row in catalogData2CaseChange.values:
+					foundInCatalog.add(row[0])
+					rows = data2[(data2["subj"] == row[1]) & (data2["crse"] == int(row[2]))]
+					if (len(rows.index.values) == 0):
+						continue
+					rows.loc[:,'title'] = row[0]
+					for secs in rows["sections"]:
+						for sec in secs:
+							sec['title'] = row[0]
+					data2Incomplete = pd.concat([data2Incomplete, rows])
 
 data2 = data2Incomplete
-
 for c in classesToTake:
 	if (c not in data2["title"].values):
-		print(f"could not find class {c}")
+		if c in foundInCatalog:
+			print(f"Found class {c} in catalog but not in courses. Class probably not being offered")
+		else:
+			print(f"Could not find class {c}. Check that this is the correct name.")
 
 print("Data Gather Step Done")
 
@@ -66,10 +123,12 @@ data3:pd.DataFrame = pd.DataFrame(columns=["title", "crse", "subj", 'act', 'cred
 ['act', 'attribute', 'cap', 'credMax', 'credMin', 'crn', 'crse', 'rem', 'sec', 'subj', 'timeslots', 'title']
 for index, row in data2.iterrows():
 	if (row["crse"] >= 5000): continue
+	sec:dict
 	for sec in row["sections"]:
 		if "xl_rem" in sec: sec.pop("xl_rem")
 		# sec.pop("credMax")
-		sec.pop("attribute")
+		if ("attribute" in sec.keys()):
+			sec.pop("attribute")
 		# sec.pop("credMin")
 		data3 = pd.concat((data3, pd.DataFrame(sec)))
 
@@ -104,24 +163,35 @@ with tqdm(total=total) as pbar:
 				G.add_edge(row["crn"], row2["crn"])
 			pbar.update(1)
 
-print("Conflict Graph Created Done")
-
-subs = [s for s in nx.enumerate_all_cliques(G)]
-
-print(f"Searching {len(subs)} Cliques In Conflict Graph...")
-
-# subs = [s for s in nx.enumerate_all_cliques(G) if len(s) >= 6]
-
 filterData = userData["filters"]
 needed = filterData["classes to force"]
 cpy = copy(needed)
 for c in cpy:
 	if "__DONT__" in c:
 		needed.remove(c)
-credData = {}
-cpy = subs.copy()
 
-for sub in tqdm(cpy):
+neededNodes = data3.loc[data3["title"].isin(needed)]["crn"].values
+neighbors_per_parent = [set(G.neighbors(n)) for n in neededNodes]
+common_neighbors = set.intersection(*neighbors_per_parent)
+nodes_to_keep = common_neighbors.union(neededNodes)
+G = G.subgraph(nodes_to_keep)
+
+
+print("Conflict Graph Created Done")
+
+subs = list(nx.enumerate_all_cliques(G))
+
+print(f"Searching {len(subs)} Cliques In Conflict Graph...")
+
+credData = {}
+userDataCredMin = filterData["cred"]["min"]
+userDataCredMax = filterData["cred"]["max"]
+
+filterSubs = []
+
+random.shuffle(subs)
+
+for sub in tqdm(subs):
 	credMax = 0
 	credMin = 0
 	found = 0
@@ -132,33 +202,35 @@ for sub in tqdm(cpy):
 	doubleLab = False
 	for c in sub:
 		row = data3.loc[data3['crn'] == c].iloc[0]
-		if (row["subj"] == "BIOL" and row["crse"] == 1010):
+		subj = row["subj"]
+		crse = row["crse"]
+		if (subj == "BIOL" and crse == 1010):
 			needsBioLab = True
-		elif (row["subj"] == "BIOL" and (row["crse"] == 1016 or row["crse"] == 1015)):
+		elif (subj == "BIOL" and (crse == 1016 or crse == 1015)):
 			if (hasBioLab):
 				doubleLab = True
 				break
 			hasBioLab = True
 		if (row["title"] in needed):
 			found += 1
-		# print(row)
-		credMax += row["credMax"]
-		credMin += row["credMin"]
-		credDict[row['subj'] + str(row["crse"])] = (int(row["credMin"]), int(row["credMax"]))
-		key.append(row["subj"] + str(row["crse"]))
-		if credMin > filterData["cred"]["max"]:
+		thisCredMax = int(row["credMax"])
+		credMax += thisCredMax
+		thisCredMin = int(row["credMin"])
+		credMin += thisCredMin
+		credDict[subj + str(crse)] = (int(thisCredMin), int(thisCredMax))
+		key.append(subj + str(crse))
+		if credMin > userDataCredMax:
 			break
-	if not ((not doubleLab) and (needsBioLab == hasBioLab) and found == len(needed) and credMax >= filterData["cred"]["min"] and credMin <= filterData["cred"]["max"]):
-		subs.remove(sub)
-	else:
+	if (not doubleLab) and (needsBioLab == hasBioLab) and found == len(needed) and credMax >= userDataCredMin and credMin <= userDataCredMax:
 		key.sort()
 		credData[str(key)] = credDict
+		filterSubs.append(sub)
 
 print("Conflict Graph Cliques Search Done")
 print("Grouping Similar Classes..")
 
 typeSets = {}
-for sub in tqdm(subs):
+for sub in tqdm(filterSubs):
 	data = set()
 	key = list()
 	for c in sub:
@@ -179,7 +251,8 @@ print("Grouping Similar Classes Done")
 
 print()
 print()
-print("found", len(subs), "combos")
+print("found", len(filterSubs), "combos")
+print("found", len(typeSets), "groups")
 rowsToPrint = []
 maxStart = 0
 maxEnd = 0
