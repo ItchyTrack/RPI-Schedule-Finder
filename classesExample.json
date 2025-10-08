@@ -1,5 +1,5 @@
 {
-	"year": 202509,
+	"year": 202601,
 	"classes": [
 		"Rcos Open Source Development",
 		"Introduction to Formal Logic",
@@ -8,10 +8,9 @@
 		"__DONT__Graph Theory",
 		"__DONT__Computability and Logic",
 		"Foundations Of Analysis",
-		"Intro Differential Equations",
-		"__DONT__Advanced Computer Systems",
+		"Intro Diff Equations",
 		"Robotics II",
-		"Computer Components and Operations",
+		"Computer Component & Operation",
 		"Embedded Control"
 	],
 	"filters" : {
@@ -20,8 +19,12 @@
 			"Rcos Open Source Development"
 		],
 		"cred": {
-			"min": 16,
+			"min": 13,
 			"max": 20
+		},
+		"time": {
+			"min": 0,
+			"max": 2400
 		}
 	}
 }

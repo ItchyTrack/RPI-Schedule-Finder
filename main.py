@@ -113,24 +113,28 @@ for c in classesToTake:
 		if c in foundInCatalog:
 			print(f"Found class {c} in catalog but not in courses. Class probably not being offered")
 		else:
-			print(f"Could not find class {c}. Check that this is the correct name.")
+			print(f"⚠️  Could not find class {c}. Check that this is the correct name. ⚠️")
 
 print("Data Gather Step Done")
 
 print("Making Conflict Graph...")
 
+filterData = userData["filters"]
+
 data3:pd.DataFrame = pd.DataFrame(columns=["title", "crse", "subj", 'act', 'credMax', 'credMin', 'cap', 'crn', 'rem', 'sec', 'timeslots'])
-['act', 'attribute', 'cap', 'credMax', 'credMin', 'crn', 'crse', 'rem', 'sec', 'subj', 'timeslots', 'title']
+# ['act', 'attribute', 'cap', 'credMax', 'credMin', 'crn', 'crse', 'rem', 'sec', 'subj', 'timeslots', 'title']
 for index, row in data2.iterrows():
 	if (row["crse"] >= 5000): continue
 	sec:dict
 	for sec in row["sections"]:
-		if "xl_rem" in sec: sec.pop("xl_rem")
-		# sec.pop("credMax")
-		if ("attribute" in sec.keys()):
-			sec.pop("attribute")
-		# sec.pop("credMin")
-		data3 = pd.concat((data3, pd.DataFrame(sec)))
+		add = True
+		for time in sec["timeslots"]:
+			if ((int(time["timeStart"]) < filterData["time"]["min"] and int(time["timeStart"]) != -1) or (int(time["timeEnd"]) > filterData["time"]["max"] and int(time["timeEnd"]) != -1)):
+				add = False
+		if add:
+			if "xl_rem" in sec: sec.pop("xl_rem")
+			if ("attribute" in sec.keys()): sec.pop("attribute")
+			data3 = pd.concat((data3, pd.DataFrame(sec)))
 
 import networkx as nx
 
@@ -163,18 +167,18 @@ with tqdm(total=total) as pbar:
 				G.add_edge(row["crn"], row2["crn"])
 			pbar.update(1)
 
-filterData = userData["filters"]
 needed = filterData["classes to force"]
 cpy = copy(needed)
 for c in cpy:
 	if "__DONT__" in c:
 		needed.remove(c)
 
-neededNodes = data3.loc[data3["title"].isin(needed)]["crn"].values
-neighbors_per_parent = [set(G.neighbors(n)) for n in neededNodes]
-common_neighbors = set.intersection(*neighbors_per_parent)
-nodes_to_keep = common_neighbors.union(neededNodes)
-G = G.subgraph(nodes_to_keep)
+if (len(needed) > 0):
+	neededNodes = data3.loc[data3["title"].isin(needed)]["crn"].values
+	neighbors_per_parent = [set(G.neighbors(n)) for n in neededNodes]
+	common_neighbors = set.intersection(*neighbors_per_parent)
+	nodes_to_keep = common_neighbors.union(neededNodes)
+	G = G.subgraph(nodes_to_keep)
 
 
 print("Conflict Graph Created Done")
