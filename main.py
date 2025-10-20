@@ -27,6 +27,9 @@ for sec in data1:
 	data2 = pd.concat([data2, pd.DataFrame(sec["courses"])])
 
 data2Incomplete = data2[data2["title"].isin(classesToTake)]
+
+nameReplacements = {}
+
 classesNotFound = []
 for c in classesToTake:
 	if (c not in data2Incomplete["title"].values):
@@ -49,6 +52,9 @@ if len(classesNotFound) != 0:
 			d = data2CaseChange.loc[data2CaseChange["title"] == classesNotFoundCaseChange[i], 'title']
 			if (len(d) == 0): continue
 			data2CaseChange.loc[data2CaseChange["title"] == classesNotFoundCaseChange[i], 'title'] = classesNotFound[i]
+			for secs in data2CaseChange.loc[data2CaseChange["title"] == classesNotFound[i], 'sections']:
+				for sec in secs:
+					sec['title'] = classesNotFound[i]
 		data2Incomplete = pd.concat([data2Incomplete, data2CaseChange])
 
 	classesNotFound = []
