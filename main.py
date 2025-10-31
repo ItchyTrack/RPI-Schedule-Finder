@@ -180,12 +180,10 @@ for c in cpy:
 		needed.remove(c)
 
 if (len(needed) > 0):
-	neededNodes = data3.loc[data3["title"].isin(needed)]["crn"].values
-	neighbors_per_parent = [set(G.neighbors(n)) for n in neededNodes]
-	common_neighbors = set.intersection(*neighbors_per_parent)
-	nodes_to_keep = common_neighbors.union(neededNodes)
+	print(type(list(G.neighbors(37367))[0]), type(37367))
+	neighbors_and_parent = [set.union(*[set(list(G.neighbors(crn)) + [int(crn)]) for crn in data3.loc[data3["title"] == n]["crn"].values]) for n in needed]
+	nodes_to_keep = set.intersection(*neighbors_and_parent)
 	G = G.subgraph(nodes_to_keep)
-
 
 print("Conflict Graph Created Done")
 
