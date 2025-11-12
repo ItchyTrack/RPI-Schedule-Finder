@@ -97,7 +97,7 @@ if len(classesNotFound) != 0:
 				if (c != classesNotFound[i].strip()):
 					classesNotFoundCaseChange.append(c)
 			if (len(classesNotFoundCaseChange) > 0):
-				catalogData2CaseChange = catalogData2S[catalogData2S["name"].isin(classesNotFoundCaseChange)]
+				catalogData2CaseChange = catalogData2S[catalogData2S["name"].isin(classesNotFoundCaseChange)].copy()
 				for i in range(len(classesNotFoundCaseChange)):
 					d = catalogData2CaseChange.loc[catalogData2CaseChange["name"] == classesNotFoundCaseChange[i], 'name']
 					if (len(d) == 0): continue
@@ -140,7 +140,10 @@ for index, row in data2.iterrows():
 		if add:
 			if "xl_rem" in sec: sec.pop("xl_rem")
 			if ("attribute" in sec.keys()): sec.pop("attribute")
-			data3 = pd.concat((data3, pd.DataFrame(sec)))
+			if not data3.empty:
+				data3 = pd.concat((data3, pd.DataFrame(sec)))
+			else:
+				data3 =  pd.DataFrame(sec);
 
 import networkx as nx
 
@@ -180,7 +183,6 @@ for c in cpy:
 		needed.remove(c)
 
 if (len(needed) > 0):
-	print(type(list(G.neighbors(37367))[0]), type(37367))
 	neighbors_and_parent = [set.union(*[set(list(G.neighbors(crn)) + [int(crn)]) for crn in data3.loc[data3["title"] == n]["crn"].values]) for n in needed]
 	nodes_to_keep = set.intersection(*neighbors_and_parent)
 	G = G.subgraph(nodes_to_keep)
