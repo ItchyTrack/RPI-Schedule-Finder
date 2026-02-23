@@ -14,7 +14,7 @@ git submodule foreach git pull origin master
 Input should go into a json named "classes.json":
 ```
 {
-	"year": 202509,
+	"year": 202609,
 	"classes": [
 		"Rcos Open Source Development",
 		"Introduction to Formal Logic",
@@ -23,20 +23,22 @@ Input should go into a json named "classes.json":
 		"__DONT__Graph Theory",
 		"__DONT__Computability and Logic",
 		"Foundations Of Analysis",
-		"Intro Differential Equations",
-		"__DONT__Advanced Computer Systems",
+		"Intro Diff Equations",
 		"Robotics II",
-		"Computer Components and Operations",
 		"Embedded Control"
 	],
 	"filters" : {
 		"classes to force": [
-			"Introduction To Algorithms",            < if you put something here you also need it in the classes list
+			"Introduction To Algorithms",			< if you put something here you also need it in the classes list
 			"Rcos Open Source Development"
 		],
 		"cred": {
 			"min": 16,
 			"max": 20
+		},
+		"time": {
+			"min": 1000,							< this is 10:00am, 10:30am would look like 1030
+			"max": 2400
 		}
 	}
 }

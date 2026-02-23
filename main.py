@@ -119,7 +119,7 @@ for c in classesToTake:
 		if c in foundInCatalog:
 			print(f"Found class {c} in catalog but not in courses. Class probably not being offered")
 		else:
-			print(f"⚠️  Could not find class {c}. Check that this is the correct name. ⚠️")
+			print(f"⚠️  Could not find class {c}. Check that this is the correct name. ⚠️") # The emojis are not chat 😡
 
 print("Data Gather Step Done")
 

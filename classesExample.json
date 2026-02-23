@@ -6,11 +6,10 @@
 		"Introduction To Algorithms",
 		"Principles of Software",
 		"__DONT__Graph Theory",
-		"__DONT__Computability And Logic",
+		"__DONT__Computability and Logic",
 		"Foundations Of Analysis",
 		"Intro Diff Equations",
 		"Robotics II",
-		"Computer Component & Operation",
 		"Embedded Control"
 	],
 	"filters" : {
@@ -19,11 +18,11 @@
 			"Rcos Open Source Development"
 		],
 		"cred": {
-			"min": 13,
+			"min": 16,
 			"max": 20
 		},
 		"time": {
-			"min": 0,
+			"min": 1000,
 			"max": 2400
 		}
 	}
